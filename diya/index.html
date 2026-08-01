@@ -1,0 +1,676 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>For Divya — Girlfriend's Day</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;600;700;800&family=Quicksand:wght@400;500;600;700&display=swap" rel="stylesheet" />
+<style>
+/* ============================================================
+   DESIGN TOKENS — kawaii pastel, inspired by soft peach-cat stickers
+   Palette: candy pink #FFD3DC · blush #FFE6EB · coral #FF7FA0
+   deep rose #E85C82 · cream #FFF8F5 · cocoa (text) #6B4A52
+   Type: Baloo 2 (rounded display) / Quicksand (rounded body)
+   ============================================================ */
+:root{
+  --pink-deep:#FFC2CE;
+  --pink:#FFD9E1;
+  --blush:#FFEDF1;
+  --coral:#FF7FA0;
+  --rose:#E85C82;
+  --cream:#FFFBF9;
+  --cocoa:#6B4A52;
+  --cocoa-soft:#9B7680;
+  --line: rgba(232,92,130,0.16);
+}
+*{margin:0;padding:0;box-sizing:border-box;}
+html{scroll-behavior:smooth;}
+body{
+  font-family:'Quicksand',sans-serif;
+  background:var(--cream);
+  color:var(--cocoa);
+  min-height:100vh;
+  overflow-x:hidden;
+}
+.display{font-family:'Baloo 2',sans-serif;}
+
+@media (prefers-reduced-motion: reduce){
+  *{animation-duration:0.01ms !important; animation-iteration-count:1 !important; transition-duration:0.01ms !important;}
+}
+
+/* ============================================================
+   BACKDROP
+   ============================================================ */
+.bg-layer{
+  position:fixed; inset:0; z-index:-2;
+  background:
+    radial-gradient(ellipse 800px 500px at 10% 0%, var(--pink) 0%, transparent 55%),
+    radial-gradient(ellipse 700px 600px at 100% 25%, var(--blush) 0%, transparent 55%),
+    linear-gradient(180deg, #FFF3F5 0%, #FFE9EE 100%);
+}
+#sticker-field{ position:fixed; inset:0; pointer-events:none; z-index:-1; overflow:hidden; }
+.floaty{
+  position:absolute; opacity:0;
+  animation: floatyDrop linear infinite;
+}
+@keyframes floatyDrop{
+  0%{ transform:translateY(-10vh) rotate(0deg) scale(0.7); opacity:0; }
+  12%{ opacity:0.5; }
+  88%{ opacity:0.5; }
+  100%{ transform:translateY(108vh) rotate(220deg) scale(1); opacity:0; }
+}
+
+/* ============================================================
+   LOCK SCREEN
+   ============================================================ */
+#lock-screen{
+  position:fixed; inset:0; z-index:9999;
+  display:flex; justify-content:center; align-items:center;
+  background: rgba(255,233,238,0.85);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  transition: opacity 0.7s ease, visibility 0.7s ease;
+  padding:20px;
+}
+#lock-screen.hidden{ opacity:0; visibility:hidden; pointer-events:none; }
+
+.lock-card{
+  width:400px; max-width:100%;
+  padding:38px 32px 32px;
+  background: var(--cream);
+  border-radius: 36px;
+  border: 3px solid #fff;
+  box-shadow: 0 24px 60px rgba(232,92,130,0.22);
+  text-align:center;
+}
+.lock-card .cat-icon{ width:88px; margin:0 auto 8px; display:block; }
+.lock-card h1{
+  font-family:'Baloo 2',sans-serif;
+  font-size:30px; font-weight:700; color:var(--rose);
+  margin:6px 0 8px;
+}
+.lock-card p{ color:var(--cocoa-soft); font-size:15px; line-height:1.7; margin-bottom:24px; }
+.lock-card input{
+  width:100%; padding:14px 18px;
+  border-radius:60px; border:2px solid var(--pink-deep);
+  outline:none; font-size:15px; text-align:center; font-family:'Quicksand',sans-serif; font-weight:600;
+  background:#fff; transition:0.25s;
+}
+.lock-card input:focus{ border-color:var(--rose); box-shadow:0 0 0 4px rgba(255,127,160,0.15); }
+.lock-card button{
+  width:100%; margin-top:14px; padding:14px;
+  border:none; border-radius:60px;
+  background: linear-gradient(135deg, #FF9BB5, var(--rose));
+  color:#fff; font-weight:700; font-size:16px; font-family:'Baloo 2',sans-serif;
+  cursor:pointer; transition:0.3s; box-shadow:0 10px 24px rgba(232,92,130,0.35);
+}
+.lock-card button:hover{ transform:translateY(-2px) scale(1.02); }
+.lock-error{ color:#e0537a; margin-top:12px; font-size:13px; height:18px; font-weight:600; }
+
+/* ============================================================
+   LOADER
+   ============================================================ */
+#loader{
+  display:none; position:fixed; inset:0; z-index:9998;
+  background:var(--cream); justify-content:center; align-items:center; flex-direction:column; gap:12px;
+}
+#loader h2{ font-family:'Baloo 2',sans-serif; color:var(--rose); font-weight:700; font-size:24px; }
+#loader p{ color:var(--cocoa-soft); }
+.loader-bar{ width:240px; height:8px; background:var(--pink); border-radius:20px; overflow:hidden; margin-top:8px; }
+.loader-fill{ height:100%; width:0%; background:linear-gradient(90deg,#FF9BB5,var(--rose)); border-radius:20px; transition:width 0.1s linear; }
+
+/* ============================================================
+   MAIN SITE
+   ============================================================ */
+#main-site{ display:none; max-width:820px; margin:0 auto; padding:0 20px 70px; }
+#main-site.active{ display:block; animation:siteFade 0.8s ease; }
+@keyframes siteFade{ from{opacity:0; transform:translateY(24px);} to{opacity:1; transform:translateY(0);} }
+
+.card{
+  background: #fff;
+  border-radius: 32px;
+  padding: 36px 32px;
+  margin: 30px 0;
+  border: 3px solid var(--blush);
+  box-shadow: 0 16px 40px rgba(232,92,130,0.08);
+}
+.section-title{
+  font-family:'Baloo 2',sans-serif;
+  font-size:27px; font-weight:700; color:var(--rose);
+  text-align:center; margin-bottom:6px;
+}
+.section-sub{ text-align:center; color:var(--cocoa-soft); font-size:14px; margin-bottom:22px; }
+
+/* ============================================================
+   HERO
+   ============================================================ */
+.hero{ text-align:center; padding:56px 10px 14px; }
+.hero .badge{
+  display:inline-flex; align-items:center; gap:6px;
+  padding:8px 22px; border-radius:60px;
+  background:#fff; color:var(--rose); font-weight:700; font-size:13px;
+  box-shadow:0 8px 20px rgba(232,92,130,0.15); margin-bottom:18px;
+}
+.hero-cats{ width:210px; max-width:70%; margin:0 auto 10px; display:block; }
+.hero h1{
+  font-family:'Baloo 2',sans-serif; font-size:52px; font-weight:800; color:var(--rose);
+  line-height:1.1;
+}
+.hero p{
+  max-width:560px; margin:18px auto 0; font-size:16.5px; line-height:1.9; color:var(--cocoa-soft);
+  font-weight:500;
+}
+.hero p strong{ color:var(--rose); font-weight:700; }
+
+/* ============================================================
+   WHATSAPP CHAT
+   ============================================================ */
+.phone-mockup{
+  max-width:400px; margin:0 auto; background:#fff; border-radius:32px; overflow:hidden;
+  box-shadow:0 20px 45px rgba(232,92,130,0.15); border:3px solid var(--blush);
+}
+.chat-header{
+  background: linear-gradient(135deg, #FF9BB5, var(--rose));
+  padding:15px 18px; display:flex; align-items:center; gap:12px; color:#fff;
+}
+.chat-avatar{ width:40px; height:40px; border-radius:50%; background:rgba(255,255,255,0.25); display:flex; align-items:center; justify-content:center; font-size:19px; }
+.chat-name{ font-weight:700; font-size:15px; font-family:'Baloo 2',sans-serif; }
+.chat-status{ font-size:11px; opacity:0.9; }
+.chat-body{ background:var(--blush); padding:16px 14px 20px; min-height:340px; display:flex; flex-direction:column; }
+.msg{
+  max-width:78%; padding:10px 15px; border-radius:18px; margin-bottom:8px; font-size:14px; line-height:1.5;
+  opacity:0; transform:translateY(14px); animation:msgPop 0.4s ease forwards; font-weight:500;
+}
+@keyframes msgPop{ to{opacity:1; transform:translateY(0);} }
+.msg-left{ background:#fff; align-self:flex-start; border-bottom-left-radius:4px; }
+.msg-right{ background: linear-gradient(135deg,#FFB6C8,#FF9BB5); color:#fff; align-self:flex-end; border-bottom-right-radius:4px; }
+.typing-dots{ display:none; align-self:flex-start; padding:10px 15px; background:#fff; border-radius:18px; border-bottom-left-radius:4px; gap:4px; margin-bottom:8px; }
+.typing-dots span{ width:6px; height:6px; background:var(--coral); border-radius:50%; animation:dotBounce 1.2s infinite; }
+.typing-dots span:nth-child(2){ animation-delay:0.2s; }
+.typing-dots span:nth-child(3){ animation-delay:0.4s; }
+@keyframes dotBounce{ 0%,60%,100%{transform:translateY(0); opacity:0.5;} 30%{transform:translateY(-6px); opacity:1;} }
+
+/* ============================================================
+   COUPLE GALLERY
+   ============================================================ */
+.gallery-grid{
+  display:grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap:14px;
+}
+.gallery-item{
+  position:relative;
+  border-radius:22px;
+  overflow:hidden;
+  background: var(--blush);
+  border:3px solid #fff;
+  box-shadow:0 10px 24px rgba(232,92,130,0.14);
+  transition:0.3s cubic-bezier(0.34,1.56,0.64,1);
+  aspect-ratio: 1 / 1;
+}
+.gallery-item:hover{ transform:translateY(-6px) scale(1.03); box-shadow:0 16px 32px rgba(232,92,130,0.24); }
+.gallery-item img{
+  width:100%; height:100%; object-fit:cover; display:block;
+}
+.gallery-item.wide{ grid-column: span 2; }
+.gallery-item.tall{ grid-row: span 1; }
+@media (max-width:640px){
+  .gallery-grid{ grid-template-columns: repeat(2, 1fr); }
+  .gallery-item.wide{ grid-column: span 2; }
+}
+
+/* ============================================================
+   LOVE METER
+   ============================================================ */
+.meter-track{ width:100%; height:16px; background:var(--pink); border-radius:60px; overflow:hidden; }
+.meter-fill{ height:100%; width:0%; background:linear-gradient(90deg,#FF9BB5,var(--rose)); border-radius:60px; transition:width 3s cubic-bezier(0.22,1,0.36,1); }
+.meter-label{ text-align:center; font-family:'Baloo 2',sans-serif; font-size:38px; font-weight:800; color:var(--rose); margin-top:14px; }
+
+/* ============================================================
+   GIFT — cat-couple paw box
+   ============================================================ */
+.gift-wrap{ text-align:center; }
+.gift-box{
+  width:150px; margin:6px auto; cursor:pointer;
+  transition:0.4s cubic-bezier(0.34,1.56,0.64,1);
+  filter: drop-shadow(0 14px 28px rgba(232,92,130,0.22));
+  animation: giftFloat 3s infinite ease-in-out;
+}
+@keyframes giftFloat{ 0%,100%{transform:translateY(0) rotate(-1.5deg);} 50%{transform:translateY(-10px) rotate(1.5deg);} }
+.gift-box.shake{ animation: shake 0.6s ease; }
+@keyframes shake{
+  0%,100%{transform:rotate(0deg);}
+  20%{transform:rotate(-10deg) scale(1.05);}
+  40%{transform:rotate(10deg) scale(1.05);}
+  60%{transform:rotate(-6deg);}
+  80%{transform:rotate(6deg);}
+}
+#gift-reveal{ display:none; margin-top:26px; animation:fadeUp 0.8s ease; }
+@keyframes fadeUp{ from{opacity:0; transform:translateY(30px);} to{opacity:1; transform:translateY(0);} }
+#gift-reveal h2{ font-family:'Baloo 2',sans-serif; color:var(--rose); font-size:22px; margin-bottom:12px; }
+#gift-reveal p{ font-size:15.5px; line-height:2; color:var(--cocoa); font-weight:500; }
+
+/* ============================================================
+   FINAL HEART
+   ============================================================ */
+.final-heart-wrap{ text-align:center; }
+.final-heart{
+  font-size:78px; cursor:pointer; display:inline-block;
+  animation:heartBeat 1.4s infinite ease-in-out; transition:0.3s;
+  filter: drop-shadow(0 10px 24px rgba(232,92,130,0.25));
+}
+.final-heart:hover{ transform:scale(1.08); }
+@keyframes heartBeat{
+  0%,100%{transform:scale(1);} 15%{transform:scale(1.18);} 30%{transform:scale(0.95);}
+  45%{transform:scale(1.12);} 60%{transform:scale(0.98);} 75%{transform:scale(1.05);}
+}
+#forever-section{ display:none; text-align:center; padding:34px 10px 6px; }
+#forever-section h1{ font-family:'Baloo 2',sans-serif; font-size:44px; color:var(--rose); }
+.forever-btn{
+  margin-top:22px; padding:16px 52px; border:none; border-radius:60px;
+  background: linear-gradient(135deg,#FF9BB5,var(--rose)); color:#fff; font-size:18px; font-weight:700;
+  font-family:'Baloo 2',sans-serif; cursor:pointer; transition:0.3s; box-shadow:0 14px 32px rgba(232,92,130,0.3);
+}
+.forever-btn:hover{ transform:scale(1.05); }
+
+/* ============================================================
+   MUSIC
+   ============================================================ */
+.music-wrapper{ border-radius:24px; overflow:hidden; border:3px solid var(--blush); }
+.music-wrapper iframe{ width:100%; height:340px; border:0; display:block; }
+
+/* ============================================================
+   NOTES
+   ============================================================ */
+.notes p{ font-size:15.5px; line-height:2.2; color:var(--cocoa); font-weight:600; }
+
+/* ============================================================
+   FOOTER
+   ============================================================ */
+footer{ text-align:center; padding:44px 10px 20px; color:var(--cocoa-soft); font-size:13px; }
+footer b{ color:var(--rose); font-family:'Baloo 2',sans-serif; }
+
+/* ============================================================
+   RESPONSIVE
+   ============================================================ */
+@media (max-width:640px){
+  .lock-card{ padding:30px 22px; }
+  .hero h1{ font-size:38px; }
+  .card{ padding:26px 20px; }
+  .section-title{ font-size:22px; }
+  .sticker-item{ font-size:26px; padding:14px 4px; }
+  .final-heart{ font-size:60px; }
+  .gift-box{ width:120px; }
+  #forever-section h1{ font-size:32px; }
+  .music-wrapper iframe{ height:230px; }
+}
+</style>
+</head>
+<body>
+
+<div class="bg-layer"></div>
+<div id="sticker-field"></div>
+
+<!-- LOCK SCREEN -->
+<div id="lock-screen">
+  <div class="lock-card">
+    <svg class="cat-icon" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+      <ellipse cx="50" cy="58" rx="34" ry="30" fill="#F4C7C3"/>
+      <path d="M22 40 L30 20 L40 38 Z" fill="#F4C7C3"/>
+      <path d="M78 40 L70 20 L60 38 Z" fill="#F4C7C3"/>
+      <circle cx="38" cy="55" r="3.2" fill="#6B4A52"/>
+      <circle cx="62" cy="55" r="3.2" fill="#6B4A52"/>
+      <ellipse cx="30" cy="65" rx="6" ry="4" fill="#FFAFC0" opacity="0.8"/>
+      <ellipse cx="70" cy="65" rx="6" ry="4" fill="#FFAFC0" opacity="0.8"/>
+      <path d="M45 66 Q50 70 55 66" stroke="#6B4A52" stroke-width="2" fill="none" stroke-linecap="round"/>
+    </svg>
+    <h1>For Divya 💗</h1>
+    <p>Happy Girlfriend's Day, Cutie!<br>Type your name to unlock your surprise~</p>
+    <input id="name-input" type="text" placeholder="Type 'Divya'" autofocus />
+    <button onclick="unlockSite()">🎀 Unlock</button>
+    <div class="lock-error" id="lock-error"></div>
+  </div>
+</div>
+
+<!-- LOADER -->
+<div id="loader">
+  <h2>Welcome, Cutie 🌸</h2>
+  <p>Loading your surprise&hellip;</p>
+  <div class="loader-bar"><div class="loader-fill" id="loader-fill"></div></div>
+</div>
+
+<!-- MAIN SITE -->
+<div id="main-site">
+
+  <section class="hero">
+    <div class="badge">🌸 Happy Girlfriend's Day 🌸</div>
+    <svg class="hero-cats" viewBox="0 0 220 140" xmlns="http://www.w3.org/2000/svg">
+      <!-- gray cat -->
+      <g>
+        <ellipse cx="80" cy="90" rx="42" ry="38" fill="#B7ADA6"/>
+        <path d="M46 62 L38 34 L64 56 Z" fill="#B7ADA6"/>
+        <path d="M114 62 L122 34 L96 56 Z" fill="#B7ADA6"/>
+        <path d="M52 60 L46 42 L60 54 Z" fill="#F4D3D8"/>
+        <path d="M108 60 L114 42 L100 54 Z" fill="#F4D3D8"/>
+        <circle cx="66" cy="88" r="4" fill="#4A3C40"/>
+        <circle cx="94" cy="88" r="4" fill="#4A3C40"/>
+        <ellipse cx="58" cy="100" rx="8" ry="5.5" fill="#FFAFC0" opacity="0.75"/>
+        <ellipse cx="102" cy="100" rx="8" ry="5.5" fill="#FFAFC0" opacity="0.75"/>
+        <path d="M72 100 Q80 106 88 100" stroke="#4A3C40" stroke-width="2.4" fill="none" stroke-linecap="round"/>
+      </g>
+      <!-- white/cream cat -->
+      <g>
+        <ellipse cx="148" cy="100" rx="36" ry="32" fill="#FFF6F2"/>
+        <path d="M120 76 L114 52 L136 72 Z" fill="#FFF6F2"/>
+        <path d="M176 76 L182 52 L160 72 Z" fill="#FFF6F2"/>
+        <path d="M124 74 L120 58 L132 68 Z" fill="#F4D3D8"/>
+        <path d="M172 74 L176 58 L164 68 Z" fill="#F4D3D8"/>
+        <circle cx="136" cy="98" r="3.6" fill="#4A3C40"/>
+        <circle cx="160" cy="98" r="3.6" fill="#4A3C40"/>
+        <ellipse cx="130" cy="108" rx="7" ry="5" fill="#FFAFC0" opacity="0.75"/>
+        <ellipse cx="166" cy="108" rx="7" ry="5" fill="#FFAFC0" opacity="0.75"/>
+        <path d="M142 109 Q148 114 154 109" stroke="#4A3C40" stroke-width="2.2" fill="none" stroke-linecap="round"/>
+      </g>
+      <path d="M100 40 c-4-8 -16-8 -16 2 c0 8 16 18 16 18 s16-10 16-18 c0-10-12-10-16-2z" fill="#FF7FA0"/>
+    </svg>
+    <h1>Divya 💗</h1>
+    <p>
+      To the most beautiful girl in my life&hellip; my <strong>Cutie</strong> 🥹 &amp; my <strong>Bauni</strong> 🧸<br><br>
+      Distance may keep us apart, but every heartbeat reminds me that you're always with me.
+      Every notification from you becomes my favorite moment of the day. Today is your day,
+      and this little world is made only for you.<br>
+      <strong>I love you forever.</strong> 💗
+    </p>
+  </section>
+
+  <div class="card">
+    <div class="section-title">📱 Our Little Chat</div>
+    <div class="section-sub">replaying this morning's messages</div>
+    <div class="phone-mockup">
+      <div class="chat-header">
+        <div class="chat-avatar">🌸</div>
+        <div>
+          <div class="chat-name">Divya 💗</div>
+          <div class="chat-status">Online · typing&hellip;</div>
+        </div>
+      </div>
+      <div class="chat-body" id="chat-body">
+        <div class="typing-dots" id="typing-dots"><span></span><span></span><span></span></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="section-title">💑 Us, Always</div>
+    <div class="section-sub">a little gallery, just for you</div>
+    <div class="gallery-grid">
+      <div class="gallery-item wide"><img src="images/couple-2.png" alt="Us together" loading="lazy"></div>
+      <div class="gallery-item"><img src="images/couple-1.png" alt="Us together" loading="lazy"></div>
+      <div class="gallery-item"><img src="images/couple-3.png" alt="Us together" loading="lazy"></div>
+      <div class="gallery-item"><img src="images/couple-4.png" alt="Us together" loading="lazy"></div>
+      <div class="gallery-item wide"><img src="images/couple-5.png" alt="Us together" loading="lazy"></div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="section-title">❤️ My Love For You</div>
+    <div class="section-sub">still climbing, never stops</div>
+    <div class="meter-track"><div class="meter-fill" id="meter-fill"></div></div>
+    <div class="meter-label" id="meter-label">0%</div>
+  </div>
+
+  <div class="card">
+    <div class="section-title">🎁 Open Your Surprise, Cutie</div>
+    <div class="section-sub">tap the box</div>
+    <div class="gift-wrap">
+      <svg class="gift-box" id="gift-box" onclick="openGift()" viewBox="0 0 160 160" xmlns="http://www.w3.org/2000/svg">
+        <rect x="24" y="70" width="112" height="72" rx="14" fill="#FF9BB5"/>
+        <rect x="24" y="70" width="112" height="26" rx="10" fill="#FF7FA0"/>
+        <rect x="70" y="70" width="20" height="72" fill="#FFEDF1"/>
+        <path d="M80 70 c-14 0 -26 -14 -18 -26 c6 -9 20 -6 18 8 c-2 -14 12 -17 18 -8 c8 12 -4 26 -18 26z" fill="#FFEDF1"/>
+        <circle cx="46" cy="120" r="9" fill="#fff" opacity="0.9"/>
+        <circle cx="46" cy="120" r="4" fill="#4A3C40"/>
+        <circle cx="114" cy="120" r="9" fill="#fff" opacity="0.9"/>
+        <circle cx="114" cy="120" r="4" fill="#4A3C40"/>
+        <ellipse cx="38" cy="128" rx="5" ry="3.4" fill="#FF5C8A" opacity="0.6"/>
+        <ellipse cx="122" cy="128" rx="5" ry="3.4" fill="#FF5C8A" opacity="0.6"/>
+      </svg>
+    </div>
+    <div id="gift-reveal">
+      <h2>🥹 Surprise For My Bauni 💗</h2>
+      <p>
+        Dear Divya&hellip; I know we haven't met yet. But somehow&hellip; you've become my safest place.
+        Thank you for staying. Thank you for understanding me. Thank you for making me smile.
+        <br><br>
+        One day&hellip; I'll replace these messages with hugs. I'll replace video calls with real moments.
+        Until then&hellip; please keep smiling. Because your smile is my favorite view.
+        <br><br>
+        <strong>Happy Girlfriend's Day, my Cutie 💗 my Bauni 🧸</strong><br>
+        I love you forever. 💗
+      </p>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="section-title">💕 One Last Thing&hellip;</div>
+    <div class="section-sub">click my heart</div>
+    <div class="final-heart-wrap">
+      <div class="final-heart" onclick="showForever()">❤️</div>
+    </div>
+  </div>
+
+  <div id="forever-section">
+    <h1>Forever? 💖</h1>
+    <button class="forever-btn" onclick="celebrateForever()">YES ❤️</button>
+  </div>
+
+  <div class="card">
+    <div class="section-title">🎵 Our Song</div>
+    <div class="section-sub">Jeene Laga Hoon 💗</div>
+    <div class="music-wrapper">
+      <iframe src="https://www.youtube.com/embed/2hAilIGlNl0?autoplay=1&mute=1&loop=1&playlist=2hAilIGlNl0" allow="autoplay; encrypted-media" allowfullscreen></iframe>
+    </div>
+  </div>
+
+  <div class="card notes">
+    <div class="section-title">🥹 Just For My Cutie</div>
+    <p>🌸 You're my favorite notification.</p>
+    <p>🧸 Home isn't a place anymore&hellip; it's wherever you are.</p>
+    <p>🎀 Distance is temporary. My love for you isn't.</p>
+    <p>🤍 Every heartbeat whispers your name&hellip; Divya.</p>
+    <p>🥹 You're not just my girlfriend. You're my peace.</p>
+  </div>
+
+  <footer>
+    Made with 💗 only for <b>Divya</b><br><br>
+    My Cutie 🥹 &bull; My Bauni 🧸<br><br>
+    🌸 Happy Girlfriend's Day 🌸
+  </footer>
+
+</div>
+
+<script>
+// ============================================================
+// FLOATING STICKERS (background)
+// ============================================================
+(function startFloaties(){
+  const container = document.getElementById('sticker-field');
+  const stickers = ['🌸','💗','🧸','✨','🤍','🎀'];
+  for(let i=0;i<20;i++){
+    const el = document.createElement('div');
+    el.className='floaty';
+    el.textContent = stickers[Math.floor(Math.random()*stickers.length)];
+    el.style.left = Math.random()*100+'%';
+    el.style.fontSize = (Math.random()*1.4+1)+'rem';
+    el.style.animationDuration = (Math.random()*14+12)+'s';
+    el.style.animationDelay = (Math.random()*18)+'s';
+    container.appendChild(el);
+  }
+})();
+
+// ============================================================
+// UNLOCK
+// ============================================================
+function unlockSite(){
+  const input = document.getElementById('name-input');
+  const error = document.getElementById('lock-error');
+  const val = input.value.trim().toLowerCase();
+
+  if(val==='divya'){
+    document.getElementById('lock-screen').classList.add('hidden');
+    const loader = document.getElementById('loader');
+    loader.style.display='flex';
+    const fill = document.getElementById('loader-fill');
+    let p=0;
+    const interval=setInterval(()=>{
+      p+=1; fill.style.width=p+'%';
+      if(p>=100){
+        clearInterval(interval);
+        loader.style.display='none';
+        document.getElementById('main-site').classList.add('active');
+        document.body.style.overflow='auto';
+        startChat();
+        startMeter();
+        fireConfetti(40);
+      }
+    },20);
+  } else if(val===''){
+    error.textContent='Please type your name, beautiful.';
+  } else {
+    error.textContent='Only Divya can unlock this 💗';
+    input.value=''; input.focus();
+  }
+}
+document.getElementById('name-input').addEventListener('keydown',(e)=>{
+  if(e.key==='Enter') unlockSite();
+});
+
+// ============================================================
+// WHATSAPP CHAT
+// ============================================================
+function startChat(){
+  const body = document.getElementById('chat-body');
+  const dots = document.getElementById('typing-dots');
+  const messages=[
+    {side:'right', text:'Good Morning Cutie 🌸🥹'},
+    {side:'left', text:'Good Morning ❤️'},
+    {side:'right', text:"Happy Girlfriend's Day Bauni ❤️"},
+    {side:'left', text:'Awww 🥺🩷'},
+    {side:'right', text:"You're the best thing that has ever happened to me."},
+    {side:'left', text:"You're making me blush. 🧸🌸"},
+    {side:'right', text:"Promise you'll always stay with me?"},
+    {side:'left', text:'Forever ❤️'}
+  ];
+  let index=0;
+  function addMessage(msg){
+    const div=document.createElement('div');
+    div.className='msg '+(msg.side==='right'?'msg-right':'msg-left');
+    div.textContent=msg.text;
+    body.appendChild(div);
+    body.parentElement.scrollTop = body.parentElement.scrollHeight;
+  }
+  function showTyping(show){ dots.style.display = show?'flex':'none'; }
+  function nextMessage(){
+    if(index>=messages.length) return;
+    showTyping(true);
+    const delay = 800+Math.random()*600;
+    setTimeout(()=>{
+      showTyping(false);
+      addMessage(messages[index]);
+      index++;
+      if(index<messages.length){
+        setTimeout(nextMessage, 1200+Math.random()*800);
+      }
+    }, delay);
+  }
+  setTimeout(nextMessage, 1000);
+}
+
+// ============================================================
+// LOVE METER
+// ============================================================
+function startMeter(){
+  const fill=document.getElementById('meter-fill');
+  const label=document.getElementById('meter-label');
+  let p=0;
+  const interval=setInterval(()=>{
+    p+=1; fill.style.width=p+'%'; label.textContent=p+'%';
+    if(p>=100){ clearInterval(interval); label.textContent='∞ ❤️'; }
+  },30);
+}
+
+// ============================================================
+// GIFT BOX
+// ============================================================
+function openGift(){
+  const box=document.getElementById('gift-box');
+  const reveal=document.getElementById('gift-reveal');
+  box.classList.add('shake');
+  setTimeout(()=>box.classList.remove('shake'),700);
+  if(reveal.style.display!=='block'){
+    reveal.style.display='block';
+    fireConfetti(60); setTimeout(()=>fireConfetti(40),400);
+  } else {
+    fireConfetti(40);
+  }
+}
+
+// ============================================================
+// FINAL HEART -> FOREVER
+// ============================================================
+function showForever(){
+  const section=document.getElementById('forever-section');
+  if(section.style.display!=='block'){
+    section.style.display='block';
+    section.scrollIntoView({behavior:'smooth', block:'center'});
+    fireConfetti(40);
+  }
+}
+function celebrateForever(){
+  fireConfetti(90); setTimeout(()=>fireConfetti(70),300);
+  for(let i=0;i<24;i++){
+    setTimeout(()=>{
+      const h=document.createElement('div');
+      h.textContent=['❤️','🩷','🌸','🧸','✨','🎀'][Math.floor(Math.random()*6)];
+      h.style.cssText=`position:fixed;left:${Math.random()*100}vw;top:-40px;
+        font-size:${26+Math.random()*32}px;pointer-events:none;z-index:99999;
+        animation:floatyDrop 3s linear forwards;`;
+      document.body.appendChild(h);
+      setTimeout(()=>h.remove(),3400);
+    }, i*80);
+  }
+}
+
+// ============================================================
+// CONFETTI
+// ============================================================
+function fireConfetti(count=50){
+  const colors=['#FF7FA0','#E85C82','#FFB6C8','#FFD9E1','#FFF0F3'];
+  const stickers=['❤️','🌸','🧸','✨','🎀','💗'];
+  for(let i=0;i<count;i++){
+    const el=document.createElement('div');
+    const isSticker = Math.random()>0.6;
+    const size=10+Math.random()*16;
+    if(isSticker){
+      el.textContent=stickers[Math.floor(Math.random()*stickers.length)];
+      el.style.fontSize=size+'px';
+    } else {
+      el.style.width=size+'px'; el.style.height=(size*0.6)+'px';
+      el.style.background=colors[Math.floor(Math.random()*colors.length)];
+      el.style.borderRadius= Math.random()>0.5 ? '50%' : '3px';
+    }
+    el.style.cssText+=`position:fixed;left:${Math.random()*100}%;top:-20px;
+      pointer-events:none;z-index:99999;opacity:1;transform:rotate(${Math.random()*360}deg);`;
+    document.body.appendChild(el);
+    const duration=1500+Math.random()*1600;
+    const xMove=(Math.random()-0.5)*420;
+    el.animate([
+      {transform:'translate(0,0) rotate(0deg)', opacity:1},
+      {transform:`translate(${xMove}px, ${window.innerHeight+100}px) rotate(${Math.random()*620}deg)`, opacity:0}
+    ],{duration, easing:'cubic-bezier(0.2,0.8,0.3,1)', fill:'forwards'}).onfinish=()=>el.remove();
+  }
+}
+</script>
+</body>
+</html>
